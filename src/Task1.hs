@@ -22,6 +22,7 @@ type Forest a = [Tree a]
 -- | Tree traversal order
 data Order = PreOrder | InOrder | PostOrder
   deriving Show
+  
 
 -- * Function definitions
 
@@ -29,12 +30,13 @@ data Order = PreOrder | InOrder | PostOrder
 --
 -- Usage example:
 --
--- >>> torder PreOrder  (Just '.') (Branch 'A' Leaf (Branch 'B' Leaf Leaf))
+-- >>> torder PreOrder   (Just '.') (Branch 'A' Leaf (Branch 'B' Leaf Leaf))
 -- "A.B.."
--- >>> torder InOrder   (Just '.') (Branch 'A' Leaf (Branch 'B' Leaf Leaf))
--- "A.B.."
+-- >>> torder InOrder    (Just '.') (Branch 'A' Leaf (Branch 'B' Leaf Leaf))
+-- ".A.B."
 -- >>> torder PostOrder  (Just '.') (Branch 'A' Leaf (Branch 'B' Leaf Leaf))
--- "A.B.."
+-- "...BA"
+
 --
 torder :: Order    -- ^ Order of resulting traversal
        -> Maybe a  -- ^ Optional leaf value

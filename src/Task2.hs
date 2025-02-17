@@ -5,15 +5,16 @@ module Task2 where
 
 -- Explicit import of Prelude to hide functions
 -- that are not supposed to be used in this assignment
-import Prelude hiding (compare, foldl, foldr, Ordering(..))
+import Prelude hiding (compare, foldr, Ordering(..))
 
-import Task1 (Tree(..))
+import Task1 (Tree(..),  inorder)
+
 
 -- * Type definitions
 
 -- | Ordering enumeration
 data Ordering = LT | EQ | GT
-  deriving Show
+  deriving (Show, Eq)
 
 -- | Binary comparison function indicating whether first argument is less, equal or
 -- greater than the second one (returning 'LT', 'EQ' or 'GT' respectively)
@@ -33,7 +34,10 @@ type Cmp a = a -> a -> Ordering
 -- GT
 --
 compare :: Ord a => Cmp a
-compare = error "TODO: define compare"
+compare x y 
+  | x < y     = LT
+  | x > y     = GT
+  | otherwise = EQ
 
 -- | Conversion of list to binary search tree
 -- using given comparison function
@@ -46,7 +50,8 @@ compare = error "TODO: define compare"
 -- Leaf
 --
 listToBST :: Cmp a -> [a] -> Tree a
-listToBST = error "TODO: define listToBST"
+listToBST _ [] = Leaf
+listToBST cmp (x:xs) = tinsert cmp x (listToBST cmp xs)
 
 -- | Conversion from binary search tree to list
 --
@@ -62,7 +67,7 @@ listToBST = error "TODO: define listToBST"
 -- []
 --
 bstToList :: Tree a -> [a]
-bstToList = error "TODO: define bstToList"
+bstToList = inorder Nothing
 
 -- | Tests whether given tree is a valid binary search tree
 -- with respect to given comparison function
@@ -77,7 +82,25 @@ bstToList = error "TODO: define bstToList"
 -- False
 --
 isBST :: Cmp a -> Tree a -> Bool
-isBST = error "TODO: define isBST"
+isBST  _   Leaf = True
+isBST cmp (Branch v l r) = 
+      lt v l 
+      && gt v r 
+      && isBST cmp l 
+      && isBST cmp r
+  where 
+    lt _ Leaf                = True
+    lt root (Branch x l1 r1) = cmp x root /= GT
+                            && cmp x root /= EQ 
+                            && lt root l1 
+                            && lt root r1
+
+    gt _ Leaf                = True
+    gt root (Branch x l2 r2) = cmp x root /= LT  
+                            && cmp x root /= EQ  
+                            &&  gt root l2 
+                            && gt root r2
+
 
 -- | Searches given binary search tree for
 -- given value with respect to given comparison
@@ -95,7 +118,11 @@ isBST = error "TODO: define isBST"
 -- Just 2
 --
 tlookup :: Cmp a -> a -> Tree a -> Maybe a
-tlookup = error "TODO: define tlookup"
+tlookup _ _ Leaf = Nothing
+tlookup cmp x (Branch v l r) 
+    | cmp x v == LT   = tlookup cmp x l
+    | cmp x v == GT   = tlookup cmp x r 
+    | otherwise       = Just v
 
 -- | Inserts given value into given binary search tree
 -- preserving its BST properties with respect to given comparison
@@ -113,7 +140,11 @@ tlookup = error "TODO: define tlookup"
 -- Branch 'a' Leaf Leaf
 --
 tinsert :: Cmp a -> a -> Tree a -> Tree a
-tinsert = error "TODO: define tinsert"
+tinsert   _ x  Leaf = Branch x Leaf Leaf
+tinsert cmp x (Branch v l r) 
+  | cmp x v == LT = Branch v (tinsert cmp x l) r
+  | cmp x v == GT = Branch v l (tinsert cmp x r) 
+  | otherwise     = Branch x l r
 
 -- | Deletes given value from given binary search tree
 -- preserving its BST properties with respect to given comparison
@@ -129,4 +160,22 @@ tinsert = error "TODO: define tinsert"
 -- Leaf
 --
 tdelete :: Cmp a -> a -> Tree a -> Tree a
-tdelete = error "TODO: define tdelete"
+tdelete  _ _ Leaf = Leaf
+tdelete  cmp x (Branch v l r) 
+  | cmp x v == LT = Branch v (tdelete cmp x l) r
+  | cmp x v == GT = Branch v l (tdelete cmp x r)
+  | otherwise     = deleteNode cmp (Branch v l r)
+
+deleteNode :: Cmp a -> Tree a -> Tree a
+deleteNode _  Leaf             = Leaf
+deleteNode _ (Branch _ Leaf r) = r
+deleteNode _ (Branch _ l Leaf) = l
+deleteNode _ (Branch _ l r)    = Branch minR l newR
+            where (minR, newR) = getMin r
+
+getMin :: Tree a -> (a, Tree a)
+getMin  Leaf             = error "Tree is empty!"
+getMin (Branch v Leaf r) = (v, r)
+getMin (Branch v l r)    = (minL, Branch v newL r)
+      where (minL, newL) = getMin l
+
