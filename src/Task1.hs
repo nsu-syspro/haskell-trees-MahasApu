@@ -121,15 +121,3 @@ foldl _ acc  [ ]      = acc
 foldl op acc (x : xs) = foldl op (op acc x) xs
 
 
--- | Right fold, accumulates a result by applying an operation to 
--- each element from recieved list [b] from right to left
---
--- Usage example:
--- >>> foldr (+) 5 [1,2,3,4]
--- 15
--- >>> foldr max 5 [1,2,3,4]
--- 5
-foldr :: (a -> b -> b) -> b -> [a] -> b
-foldr _ acc  [ ]      = acc
-foldr op acc (x : xs) = op x (foldr op acc xs)
-

@@ -50,7 +50,7 @@ compare x y
 -- Leaf
 --
 listToBST :: Cmp a -> [a] -> Tree a
-listToBST _ [] = Leaf
+listToBST _    [ ]   = Leaf
 listToBST cmp (x:xs) = tinsert cmp x (listToBST cmp xs)
 
 -- | Conversion from binary search tree to list
@@ -81,6 +81,8 @@ bstToList = inorder Nothing
 -- >>> isBST compare (Branch 5 (Branch 1 Leaf Leaf) (Branch 3 Leaf Leaf))
 -- False
 --
+
+-- Seems a... little messy
 isBST :: Cmp a -> Tree a -> Bool
 isBST  _   Leaf = True
 isBST cmp (Branch v l r) = 
@@ -166,6 +168,7 @@ tdelete  cmp x (Branch v l r)
   | cmp x v == GT = Branch v l (tdelete cmp x r)
   | otherwise     = deleteNode cmp (Branch v l r)
 
+-- Helper function to delete a node in a BST and maintain its properties
 deleteNode :: Cmp a -> Tree a -> Tree a
 deleteNode _  Leaf             = Leaf
 deleteNode _ (Branch _ Leaf r) = r
@@ -173,6 +176,7 @@ deleteNode _ (Branch _ l Leaf) = l
 deleteNode _ (Branch _ l r)    = Branch minR l newR
             where (minR, newR) = getMin r
 
+-- Helper function to find the minimum value in a tree
 getMin :: Tree a -> (a, Tree a)
 getMin  Leaf             = error "Tree is empty!"
 getMin (Branch v Leaf r) = (v, r)
